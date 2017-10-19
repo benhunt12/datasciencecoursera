@@ -1,0 +1,111 @@
+## Machine Learning Project
+Benjamin Hunt
+
+# Project Description
+
+Background
+
+Using devices such as Jawbone Up, Nike FuelBand, and Fitbit it is now possible to collect a large amount of data about personal activity relatively inexpensively. These type of devices are part of the quantified self movement – a group of enthusiasts who take measurements about themselves regularly to improve their health, to find patterns in their behavior, or because they are tech geeks. One thing that people regularly do is quantify how much of a particular activity they do, but they rarely quantify how well they do it. In this project, your goal will be to use data from accelerometers on the belt, forearm, arm, and dumbell of 6 participants. They were asked to perform barbell lifts correctly and incorrectly in 5 different ways. More information is available from the website here: http://groupware.les.inf.puc-rio.br/har (see the section on the Weight Lifting Exercise Dataset).
+
+The goal of the project is to predict the manner in which they did the exercise. This is the "classe" variable in the training set. You may use any of the other variables to predict with. You should create a report describing how you built your model, how you used cross validation, what you think the expected out of sample error is, and why you made the choices you did. You will also use your prediction model to predict 20 different test cases.
+
+
+Load the necessary libraries.
+```{r, warning=FALSE, error=FALSE, message=FALSE}
+  library(caret)
+  library(knitr)
+```
+
+Load the datasets. I have the .csv files stored on my desktop, and loaded them by changing the working directory. After loading them once and taking a look using *str()*, I noticed a lot of NA's and #DIV/0!, which I didn't know how to handle. That's where *na.strings* came in and set all "weird" values to NA.
+```{r}
+  setwd("/Users/Benjamin/Desktop")
+  testing <- read.csv("testing.csv", na.strings = c("NA", "","#DIV/0!"))
+  training <- read.csv("training.csv", na.strings = c("NA", "","#DIV/0!"))
+```
+
+Given all these NA's throughout the data set, some of the columns were useless. If you do some exploring, you can see that some columns are almost all NA's. The *max_roll_dumbbell* column for example, has 19216 NA's, which is ~97% of the observations.
+
+```{r}
+  str(training)
+  sum(is.na(training$max_roll_dumbbell))
+```
+
+Here, only if the column is completely clear of any NA's, will we take it into the new data set. If the total number of NA's in a given column equals zero, take the column.
+
+```{r}
+  ## removing columns with NAs
+  training <- training[, colSums(is.na(training)) == 0]
+  testing <- testing[, colSums(is.na(testing)) == 0]
+```
+
+Also from the *str()*, the first 7 columns are not helpful either. They are data like the user's name, two different timestamps, and windows for those timestamps. We should take those out.
+
+```{r}
+  training <- training[, -c(1:7)]
+  testing <- testing[, -c(1:7)]
+```
+
+# Partition the data
+
+Set the seed for reproducability, then create a partition of the training data. We will take 70% of it into a new training set, and use the other 30% for a validation set. 
+
+```{r}
+  set.seed(12345)
+  inTrain <- createDataPartition(training$classe, p = 0.7, list = FALSE)
+  training <- training[inTrain, ]
+  validation <- training[-inTrain, ]
+```
+
+Set the trainControl() function. The default iterations/folds is 10, and just takes a really long time. Through some trial and error, I found no difference between 10, 7, 5, and 2 iterations.
+
+```{r}
+  controller <- trainControl(method = "boot", number = 2)
+```
+
+Prediction using Rpart, and comparing to the validation set.
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, cache=TRUE}
+  ## rpart
+  modRpart <- train(classe ~ ., data = training, method = "rpart", trControl = controller)
+  predRpart <- predict(modRpart, validation)
+  confusionMatrix(validation$classe, predRpart)$overall[1]
+```
+
+Prediction using random forest, and comparing to the validation set.
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, cache=TRUE}
+  ## random forest
+  modForest <- train(classe ~ ., data = training, method = "rf", trControl = controller)
+  predForest <- predict(modForest, validation)
+  confusionMatrix(validation$classe, predForest)$overall[1]
+```
+
+
+Prediction using boosting, and comparing to the validation set.
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, cache=TRUE}
+  ## boosting
+  modBoost <- train(classe ~ ., data = training, method = "gbm", trControl = controller, verbose = F)
+  predBoost <- predict(modBoost, validation)
+  confusionMatrix(validation$classe, predBoost)$overall[1]
+```
+
+Comparing the runtimes of each algorithm.
+
+```{r, warning=FALSE, error=FALSE, message=FALSE, cache=TRUE}
+  system.time(modRpart <- train(classe ~ ., data = training, method = "rpart", trControl = controller))
+  system.time(modForest <- train(classe ~ ., data = training, method = "rf", trControl = controller))
+  system.time(modBoost <- train(classe ~ ., data = training, method = "gbm", trControl = controller, verbose = F))
+```
+
+# Predicting on the test data.
+
+Here, we predict against the test data for all three methods.
+
+```{r}
+  predict(modRpart, testing)
+  predict(modForest, testing)
+  predict(modBoost, testing)
+```
+
+You can see from the results that Rpart has vastly different outcomes, while random forest and boosting are identical. We can conclude that Rpart is not a good model for this data, and you could use either random forest or boosting, depending on time constraints.

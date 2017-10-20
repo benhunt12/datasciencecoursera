@@ -1,0 +1,9 @@
+# October 20, 2017
+
+```{r, echo = FALSE}
+  library(leaflet)
+  m <- leaflet() %>% addTiles() %>% addMarkers(lng = -122.422956, lat = 37.826977,
+                                               popup = "HAHAHA")
+  m
+```
+

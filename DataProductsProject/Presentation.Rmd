@@ -1,0 +1,23 @@
+---
+title: "BMI Calculator"
+author: "Benjamin Hunt"
+date: "October 23, 2017"
+output: 
+  ioslides_presentation:
+    fig_width: 3
+    fig_height: 3
+    fig_caption: true
+---
+
+##What is BMI?
+
+This calculator computes the body mass index and rates it appropriately for men, women, and children. A high BMI can be an indicator of high body fatness. BMI can be used as a screening tool but is not diagnostic of the body fatness or health of an individual.
+
+##Why is it important?
+
+BMI can be used for population assessment of overweight and obesity. Because calculation requires only height and weight, it is inexpensive and easy to use for clinicians and for the general public. BMI can be used as a screening tool for body fatness but is not diagnostic.
+
+
+##Calculator
+
+This calculator is a quick, accurate and inexpensive way to get your BMI. All you have to do is enter your weight and height, and you're done. It takes just a few seconds and you're done!

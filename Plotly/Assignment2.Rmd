@@ -1,0 +1,20 @@
+---
+title: "Assignment 2: Plotly"
+author: "Benjamin Hunt"
+date: "October23, 2017"
+output: ioslides_presentation
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+## Plotly Graph
+Insect Sprays DataSet
+
+```{r, error=FALSE, message=FALSE, warning=FALSE}
+  library(plotly)
+  data("InsectSprays")
+  plot_ly(InsectSprays, x = InsectSprays$spray, y = InsectSprays$count, method = "markers")
+```
+

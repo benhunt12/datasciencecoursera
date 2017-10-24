@@ -1,0 +1,94 @@
+---
+title: "Regression Models Project"
+author: "Benjamin Hunt"
+date : "October 24, 2017"
+output: html_document
+---
+
+#Project
+
+You work for Motor Trend, a magazine about the automobile industry. Looking at a data set of a collection of cars, they are interested in exploring the relationship between a set of variables and miles per gallon (MPG) (outcome). They are particularly interested in the following two questions:
+
+- Is an automatic or manual transmission better for MPG?
+
+- Quantify the MPG difference between automatic and manual transmissions?
+
+#Executive Summary
+On this page, you will find the analysis of the *mtcars* dataset, which comes standard in R. We will be investigating the difference in miles per gallon for different transimission types. After a quick analysis, the difference seems to be 7.24 mpg in favor of manual transmissions, but with only a 34.9% R-squared value, it is not a good interpretation of the data. After including some important covariates, we get a much better representation of the data, and a much smaller difference in mpg between the two transmissions.
+
+First, load the data and libraries required.
+```{r, message=FALSE}
+  library(dplyr)
+  library(tidyr)
+  data("mtcars")
+```
+
+#Exploratory Analysis
+
+Let's look at the dataset to get an idea of the variables, their types, and the size of the dataset and a *pairs()* plot to visualize it.
+
+```{r}
+  str(mtcars)
+```
+
+```{r}
+  pairs(mtcars)
+```
+
+By looking at the *pairs()* plot above, you can see a matrix of scatterplots of every covariate in the dataset plotted against each other. We are most interested in the *mpg* variable, which is on the far left. As you move your way down from the first plot labeled *mpg*, you will see it plotted against the other variables like *cyl*, *disp*, or *wt*. What we are looking for is trends in these plots, something that will give us a clue as to what their relationship is.
+
+From the plots, you can see that variables like *cyl*, *disp*, *wt*, *hp*, *am*, and *drat* have linear relationships with *mpg*, be it positive or negative. These variables are correlated, and we should keep them in mind for our models later.
+
+#Averages
+
+First, let's find the average mpg for each type of transmission.
+```{r}
+  mean <- aggregate(mpg~am, data = mtcars, mean)
+  mean
+  abs(mean[1,2] - mean[2,2])
+```
+
+In this data set, a "1" in the *am* variable means the car has a manual tranmission and a "0" is automatic. From the table, you can see that the average manual mpg is 24.39 mpg, which is 7.24 mpg higher than the average automatic transmission.
+
+#Regression Models
+
+Let's start by using just the transmission type as a predictor to mpg. I will also save the coefficients and R-squared value. 
+
+```{r}
+  fit1 <- lm(mpg ~ am, data = mtcars)
+  coef1 <- summary(fit1)$coefficients
+  r1 <- summary(fit1)$r.squared
+  summary(fit1)
+```
+
+From the summary you can see that the difference in mpg by transmission is 7.24 mpg again. This makes sense since we are only using the transmission type as the predictor. The R-squared value is 34.9%, which means the model somewhat explains the variability of the data. 
+
+Let's now try adding some of the other covariates we discovered earlier that are coreelated to *mpg*.
+
+```{r}
+  fit2 <- update(fit1, mpg ~ am + cyl + hp)
+  coef2 <- summary(fit2)$coefficients
+  r2 <- summary(fit2)$r.squared
+  summary(fit2)
+```
+
+Just by adding two more correlated predictors, the R-squared value has increased to 80.4%, which means this model does a much better job representing the data. You can also see that difference in mpg by transmission type is now 3.9 mpg. 
+
+Let's try adding a few more.
+
+```{r}
+  fit3 <- update(fit1, mpg ~ am + cyl + hp + wt + drat)
+  coef3 <- summary(fit3)$coefficients
+  r3 <- summary(fit3)$r.squared
+  summary(fit3)
+```
+
+Now the R-squared value is 84.9% and the difference in mpg is 1.34 mpg. This is a much better representation of the mpg by transmission type than by just simply taking the mean. This model takes into account multiple predictors to determine a more approximate estimation.
+
+Here, you can quickly see the increase in the R-sqaured value as we increase the number of relevant predictors, validating the procedure.
+
+```{r}
+  r <- c(r1, r2, r3)
+  r
+```
+

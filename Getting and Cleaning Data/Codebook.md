@@ -38,7 +38,7 @@ First, let's set the names of the "x" datasets using the "features" set, which i
   colnames(x_train) <- features[,2]
   colnames(x_test) <- features[,2]
 ```
-Now, "V1" aren't very descriptive names for the "y" datasets containing ativity type or the "subject" datasets containing the subject number. We'll change those to "activity" and "ID", respectively.
+Now, "V1" aren't very descriptive names for the "y" datasets containing ativity type or the "subject" datasets containing the subject number. We'll change those to "act" and "ID", respectively.
 
 ```{r}
   ## subject_train and subject test both have the same column name, but V1 doesnt really
@@ -47,19 +47,70 @@ Now, "V1" aren't very descriptive names for the "y" datasets containing ativity 
 
   ## the y_test and y_train tables have a similar problem, where the name V1 doesnt represent
   ## the data well. We'll call them activity
-  colnames(y_test) <- "activity"; colnames(y_train) <- "activity"
+  colnames(y_test) <- "act"; colnames(y_train) <- "act"
 ```
-Now we can combine the "subject", "x" and "y" datasets to create complete training and testing datasets, using _cbind().
+Now we can combine the "subject", "x" and "y" datasets to create complete training and testing datasets, using *cbind()*.
 
 ```{r}
   ## now combine the three test files and three train files
   train <- cbind(subject_train, x_train, y_train)
   test <- cbind(subject_test, x_test, y_test)
 ```
-Then combine the training and testing set to create the original data. Then we reorder the data, simply to check and make sure we've combined it all correctly. You can also view the new set using _View().
+Then combine the training and testing set to create the original data. Then we reorder the data, simply to check and make sure we've combined it all correctly. You can also view the new set using *View()*.
 
 ```{r}
   data <- as.data.frame(rbind(train, test))
+  
+  ## just reorder by ID, use unique to check
+  data <- data[order(data$ID),]
+  unique(data$ID)
+  
+  View(data)
 ```
+
+Now we want to grab only the columns that contain the mean and standard deviation. But we also want to keep the "ID" and "activity" labels
+
+```{r}
+  ## use grep() togo grab the columns with mean, sd, ID, or act
+  search <- colnames(data)
+  retData <- grep(".*mean.*|.*std.*|ID|act", search, ignore.case = T)
+
+  tidy <- data[, retData]
+```
+Next, we need to replace the numerical activity ID's with their labels. So we load activity_labels.txt, then loop through it, and where a value appears, we replace it with it's corresponding activity.
+
+```{r}
+## create activity labels, factor variable with 6 levels
+labels <- read.table("./UCI HAR Dataset/activity_labels.txt")
+str(labels)
+
+
+tidy$act <- as.character(tidy$act)
+for(i in 1:length(tidy$act)){
+  if(tidy$act[i] == 1) tidy$act[i] <- as.character(labels[1,2])
+  else if(tidy$act[i] == 2) tidy$act[i] <- as.character(labels[2,2])
+  else if(tidy$act[i] == 3) tidy$act[i] <- as.character(labels[3,2])
+  else if(tidy$act[i] == 4) tidy$act[i] <- as.character(labels[4,2])
+  else if(tidy$act[i] == 5) tidy$act[i] <- as.character(labels[5,2])
+  else tidy$act[i] <- as.character(labels[6,2])
+}
+```
+Then we just need to aggregate the data by mean for each subject and activity.
+
+```{r}
+  ## get mean for each activity for each subject ID
+  ag <- aggregate(. ~ ID + act, data = tidy, FUN = mean)
+  write.table(ag, file = "tidy.txt", row.name=FALSE)
+```
+Done!
+
+
+
+
+
+
+
+
+
 
 

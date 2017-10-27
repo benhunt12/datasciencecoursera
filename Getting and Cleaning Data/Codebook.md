@@ -38,5 +38,28 @@ First, let's set the names of the "x" datasets using the "features" set, which i
   colnames(x_train) <- features[,2]
   colnames(x_test) <- features[,2]
 ```
+Now, "V1" aren't very descriptive names for the "y" datasets containing ativity type or the "subject" datasets containing the subject number. We'll change those to "activity" and "ID", respectively.
+
+```{r}
+  ## subject_train and subject test both have the same column name, but V1 doesnt really
+  ## make sense, so we'll call them ID
+  colnames(subject_test) <- "ID"; colnames(subject_train) <- "ID"
+
+  ## the y_test and y_train tables have a similar problem, where the name V1 doesnt represent
+  ## the data well. We'll call them activity
+  colnames(y_test) <- "activity"; colnames(y_train) <- "activity"
+```
+Now we can combine the "subject", "x" and "y" datasets to create complete training and testing datasets, using _cbind().
+
+```{r}
+  ## now combine the three test files and three train files
+  train <- cbind(subject_train, x_train, y_train)
+  test <- cbind(subject_test, x_test, y_test)
+```
+Then combine the training and testing set to create the original data. Then we reorder the data, simply to check and make sure we've combined it all correctly. You can also view the new set using _View().
+
+```{r}
+  data <- as.data.frame(rbind(train, test))
+```
 
 

@@ -1,3 +1,5 @@
+Companies like Fitbit, Nike, and Jawbone Up are racing to develop the most advanced algorithms to attract new users. The data linked to from the course website represent data collected from the accelerometers from the Samsung Galaxy S smartphone. We are given seperate .txt files with data that we are to clean.
+
 This code:
 
 1. Merges the training and the test sets to create one data set.
